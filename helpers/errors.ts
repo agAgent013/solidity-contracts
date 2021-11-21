@@ -1,0 +1,15 @@
+export const Errors = {
+  NOT_OWNER: '1',
+  TX_NOT_EXIST: '2',
+  TX_EXECUTED: '3',
+  TX_CONFIRMED: '4',
+  EMPTY_OWNERS: '5',
+  INVALID_CONFIRMATIONS: '6',
+  ZERO_ADDRESS: '7',
+  ALREADY_OWNER: '8',
+  NOT_ENOUGH_CONFIRMATIONS: '9',
+  TX_FAILED: '10',
+  TX_NOT_CONFIRMED: '11',
+};
+
+export default {};
