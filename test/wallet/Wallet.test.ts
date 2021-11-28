@@ -3,7 +3,7 @@ import { ethers } from 'hardhat';
 import { BigNumber } from 'ethers';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 
-import { Errors } from '../../helpers/errors';
+import { Errors, waitForTx } from '../../helpers';
 import { Wallet__factory as WalletFactory } from '../../typechain';
 
 describe('contracts/wallet/Wallet.sol', () => {
@@ -63,13 +63,9 @@ describe('contracts/wallet/Wallet.sol', () => {
       const owners = [signer1.address, signer2.address];
       const wallet = await Wallet.deploy(owners, owners.length);
 
-      const tx = await wallet.submitTransaction(
-        signer2.address,
-        OneEther,
-        '0x',
-        false,
+      await waitForTx(
+        wallet.submitTransaction(signer2.address, OneEther, '0x', false),
       );
-      await tx.wait();
 
       const txData = await wallet.getTransaction(0);
       expect(txData.to).to.equal(signer2.address);
@@ -83,13 +79,9 @@ describe('contracts/wallet/Wallet.sol', () => {
       const owners = [signer1.address, signer2.address];
       const wallet = await Wallet.deploy(owners, owners.length);
 
-      const tx = await wallet.submitTransaction(
-        signer2.address,
-        OneEther,
-        '0x',
-        true,
+      await waitForTx(
+        wallet.submitTransaction(signer2.address, OneEther, '0x', true),
       );
-      await tx.wait();
 
       const txData = await wallet.getTransaction(0);
       expect(txData.to).to.equal(signer2.address);
@@ -117,29 +109,23 @@ describe('contracts/wallet/Wallet.sol', () => {
       const wallet = await Wallet.deploy(owners, owners.length);
 
       {
-        const tx = await wallet.submitTransaction(
-          signer2.address,
-          OneEther,
-          '0x',
-          false,
+        await waitForTx(
+          wallet.submitTransaction(signer2.address, OneEther, '0x', false),
         );
-        await tx.wait();
 
         const txData = await wallet.getTransaction(0);
         expect(txData.numberOfConfirmations).to.equal(0);
       }
 
       {
-        const tx = await wallet.confirmTransaction(0);
-        await tx.wait();
+        await waitForTx(wallet.confirmTransaction(0));
 
         const txData = await wallet.getTransaction(0);
         expect(txData.numberOfConfirmations).to.equal(1);
       }
 
       {
-        const tx = await wallet.connect(signer2).confirmTransaction(0);
-        await tx.wait();
+        await waitForTx(wallet.connect(signer2).confirmTransaction(0));
 
         const txData = await wallet.getTransaction(0);
         expect(txData.numberOfConfirmations).to.equal(2);
@@ -166,20 +152,11 @@ describe('contracts/wallet/Wallet.sol', () => {
       const owners = [signer1.address, signer2.address];
       const wallet = await Wallet.deploy(owners, owners.length);
 
-      {
-        const tx = await wallet.submitTransaction(
-          signer2.address,
-          OneEther,
-          '0x',
-          false,
-        );
-        await tx.wait();
-      }
+      await waitForTx(
+        wallet.submitTransaction(signer2.address, OneEther, '0x', false),
+      );
 
-      {
-        const tx = await wallet.confirmTransaction(0);
-        await tx.wait();
-      }
+      await waitForTx(wallet.confirmTransaction(0));
 
       const result = wallet.confirmTransaction(0);
       await expect(result).to.be.revertedWith(Errors.TX_CONFIRMED);
@@ -189,11 +166,9 @@ describe('contracts/wallet/Wallet.sol', () => {
       const owners = [signer1.address];
       const wallet = await Wallet.deploy(owners, owners.length);
 
-      await wallet
-        .submitTransaction(signer1.address, 0, [], true)
-        .then((tx) => tx.wait());
+      await waitForTx(wallet.submitTransaction(signer1.address, 0, [], true));
 
-      await wallet.executeTransaction(0).then((tx) => tx.wait());
+      await waitForTx(wallet.executeTransaction(0));
 
       const result = wallet.confirmTransaction(0);
       await expect(result).to.be.revertedWith(Errors.TX_EXECUTED);
@@ -205,12 +180,8 @@ describe('contracts/wallet/Wallet.sol', () => {
       const owners = [signer1.address];
       const wallet = await Wallet.deploy(owners, owners.length);
 
-      await wallet
-        .submitTransaction(signer1.address, 0, [], true)
-        .then((tx) => tx.wait());
-
-      const tx = await wallet.revokeTransaction(0);
-      await tx.wait();
+      await waitForTx(wallet.submitTransaction(signer1.address, 0, [], true));
+      await waitForTx(wallet.revokeTransaction(0));
 
       const txData = await wallet.getTransaction(0);
       expect(txData.numberOfConfirmations).to.equal(0);
@@ -220,9 +191,7 @@ describe('contracts/wallet/Wallet.sol', () => {
       const owners = [signer1.address];
       const wallet = await Wallet.deploy(owners, owners.length);
 
-      await wallet
-        .submitTransaction(signer1.address, 0, [], false)
-        .then((tx) => tx.wait());
+      await waitForTx(wallet.submitTransaction(signer1.address, 0, [], false));
 
       const result = wallet.revokeTransaction(0);
       await expect(result).to.be.revertedWith(Errors.TX_NOT_CONFIRMED);
@@ -248,11 +217,8 @@ describe('contracts/wallet/Wallet.sol', () => {
       const owners = [signer1.address];
       const wallet = await Wallet.deploy(owners, owners.length);
 
-      await wallet
-        .submitTransaction(signer1.address, 0, [], true)
-        .then((tx) => tx.wait());
-
-      await wallet.executeTransaction(0).then((tx) => tx.wait());
+      await waitForTx(wallet.submitTransaction(signer1.address, 0, [], true));
+      await waitForTx(wallet.executeTransaction(0));
 
       const result = wallet.revokeTransaction(0);
       await expect(result).to.be.revertedWith(Errors.TX_EXECUTED);
@@ -264,16 +230,9 @@ describe('contracts/wallet/Wallet.sol', () => {
       const owners = [signer1.address, signer2.address];
       const wallet = await Wallet.deploy(owners, owners.length);
 
-      await wallet
-        .submitTransaction(signer2.address, 0, [], true)
-        .then((tx) => tx.wait());
-
-      await wallet
-        .connect(signer2)
-        .confirmTransaction(0)
-        .then((tx) => tx.wait());
-
-      await wallet.executeTransaction(0).then((tx) => tx.wait());
+      await waitForTx(wallet.submitTransaction(signer2.address, 0, [], true));
+      await waitForTx(wallet.connect(signer2).confirmTransaction(0));
+      await waitForTx(wallet.executeTransaction(0));
 
       const txData = await wallet.getTransaction(0);
       expect(txData.executed).to.equal(true);
@@ -299,9 +258,7 @@ describe('contracts/wallet/Wallet.sol', () => {
       const owners = [signer1.address, signer2.address];
       const wallet = await Wallet.deploy(owners, owners.length);
 
-      await wallet
-        .submitTransaction(signer2.address, 0, [], true)
-        .then((tx) => tx.wait());
+      await waitForTx(wallet.submitTransaction(signer2.address, 0, [], true));
 
       const result = wallet.executeTransaction(0);
       await expect(result).to.be.revertedWith(Errors.NOT_ENOUGH_CONFIRMATIONS);
@@ -311,11 +268,8 @@ describe('contracts/wallet/Wallet.sol', () => {
       const owners = [signer1.address];
       const wallet = await Wallet.deploy(owners, owners.length);
 
-      await wallet
-        .submitTransaction(signer2.address, 0, [], true)
-        .then((tx) => tx.wait());
-
-      await wallet.executeTransaction(0).then((tx) => tx.wait());
+      await waitForTx(wallet.submitTransaction(signer2.address, 0, [], true));
+      await waitForTx(wallet.executeTransaction(0));
 
       const result = wallet.executeTransaction(0);
       await expect(result).to.be.revertedWith(Errors.TX_EXECUTED);
@@ -325,9 +279,9 @@ describe('contracts/wallet/Wallet.sol', () => {
       const owners = [signer1.address];
       const wallet = await Wallet.deploy(owners, owners.length);
 
-      await wallet
-        .submitTransaction(signer2.address, OneEther, [], true)
-        .then((tx) => tx.wait());
+      await waitForTx(
+        wallet.submitTransaction(signer2.address, OneEther, [], true),
+      );
 
       const result = wallet.executeTransaction(0);
       await expect(result).to.be.revertedWith(Errors.TX_FAILED);
@@ -342,12 +296,13 @@ describe('contracts/wallet/Wallet.sol', () => {
       const owners = [signer1.address];
       const wallet = await Wallet.deploy(owners, owners.length);
 
-      const tx = await signer1.sendTransaction({
-        to: wallet.address,
-        from: signer1.address,
-        value: ethers.utils.parseUnits('1', 'ether').toHexString(),
-      });
-      await tx.wait();
+      await waitForTx(
+        signer1.sendTransaction({
+          to: wallet.address,
+          from: signer1.address,
+          value: ethers.utils.parseUnits('1', 'ether').toHexString(),
+        }),
+      );
 
       expect(await ethers.provider.getBalance(wallet.address)).to.equal(
         OneEther,

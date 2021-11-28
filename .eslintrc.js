@@ -28,7 +28,11 @@ module.exports = {
     'import/no-extraneous-dependencies': [
       'error',
       {
-        devDependencies: ['**/*.test.ts', 'hardhat.config.ts'],
+        devDependencies: [
+          '**/*.test.ts',
+          'helpers/**/*.ts',
+          'hardhat.config.ts',
+        ],
       },
     ],
     'import/extensions': [
