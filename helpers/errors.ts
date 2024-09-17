@@ -25,6 +25,9 @@ export const Errors = {
   AUCTION_USER_IS_NOT_BIDDER: '23',
   AUCTION_WITHDRAW_FAILED: '24',
 
+  GAME_INVALID_NUMBER_OF_PLAYERS: '25',
+  GAME_INVALID_DURATION: '26',
+
   OWNABLE_ERROR: 'Ownable: caller is not the owner',
 };
 

@@ -33,5 +33,8 @@ library Errors {
     string public constant AUCTION_USER_IS_NOT_BIDDER = "23";
     string public constant AUCTION_WITHDRAW_FAILED = "24";
 
+    string public constant GAME_INVALID_NUMBER_OF_PLAYERS = "25";
+    string public constant GAME_INVALID_DURATION = "26";
+
     string public constant OWNABLE_ERROR = "Ownable: caller is not the owner";
 }
